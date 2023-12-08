@@ -145,6 +145,10 @@ def training():
 
     # data training warna abu-abu
     for f in os.listdir('./training_dataset/grey'):
-        color_extraction_of_training_image('./training_dataset/grey/' + f)		
+        color_extraction_of_training_image('./training_dataset/grey/' + f)
+
+    # data training warna violet
+    for f in os.listdir('./training_dataset/violet'):
+        color_extraction_of_training_image('./training_dataset/violet/' + f)		
 
 
