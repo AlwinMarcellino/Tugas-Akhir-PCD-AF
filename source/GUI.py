@@ -71,7 +71,10 @@ class ColorClassifierApp:
 
         # Variabel untuk menyimpan gambar yang dipilih
         self.source_image = None
-
+        
+        # Variabel untuk menyimpan persentase warna
+        self.extracted_percentage = None
+        
     # pilih gambar
     def choose_image(self):
         # Menggunakan file dialog untuk memilih gambar
@@ -136,31 +139,40 @@ class ColorClassifierApp:
             dilated_image = self.perform_dilation(segmented_image)
             eroded_image = self.perform_erosion(dilated_image)
             bitwise_image = self.perform_bitwise_and(self.source_image, eroded_image)
-            rgb_values, extracted_color_percentages = color_feature_extraction.color_extraction_of_test_image(bitwise_image, 8, 'True')
+            hex_color, rgb_values, extracted_color_percentages = color_feature_extraction.color_extraction_of_test_image(bitwise_image, 8)
 
             extraction_text = "Extracted RGB: \n"
             # Membuat list dari nilai RGB yang diekstraksi
             extracted_values = [f"RGB = {rgb}" for rgb in rgb_values]
-
+            self.extracted_percentage = extracted_color_percentages
             extraction_text += "\n".join(extracted_values)
             self.extraction_label.config(text=extraction_text)
-            return extracted_color_percentages
+
+            plt.figure(figsize=(8, 6))
+            plt.pie(extracted_color_percentages, labels=rgb_values, colors=hex_color)
+            plt.show()
         else:
             print("No image selected!")
 
     # prediksi
     def predict_color(self):
-        if self.source_image is not None:
-            extracted_color = self.color_extraction()
-            predictions = knn_classifier.main('training.data', 'test.data')
-            prediction_text = "Detected colors = "
-            for i in range(len(predictions)):
-                prediction_text += f"{predictions[i]} ({extracted_color[i]:.2f}%)"
-                if i < len(predictions) - 1:
-                    prediction_text += ", "
-            self.prediction_label.config(text=prediction_text)
+        # Memastikan data training sudah siap
+        extracted_percentage = self.extracted_percentage
+        PATH_TRAIN = './training.data'
+        PATH_TEST = './test.data'
+        if os.path.isfile(PATH_TRAIN) and os.access(PATH_TRAIN, os.R_OK) and os.path.isfile(PATH_TEST) and os.access(PATH_TEST, os.R_OK):
+            if self.source_image is not None:
+                predictions = knn_classifier.main('training.data', 'test.data')
+                prediction_text = "Detected colors = "
+                for i in range(len(predictions)):
+                    prediction_text += f"{predictions[i]} ({extracted_percentage[i]:.2f}%)"
+                    if i < len(predictions) - 1:
+                        prediction_text += ", "
+                self.prediction_label.config(text=prediction_text)
+            else:
+                print("No image selected!")
         else:
-            print("No image selected!")
+            print("No Extracted RGB!")         
 
 
     def display_image(self, image):
