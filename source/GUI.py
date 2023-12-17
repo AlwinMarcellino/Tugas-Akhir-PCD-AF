@@ -14,7 +14,7 @@ import os
 class ColorClassifierApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Color Classifier")
+        self.root.title("Color Recognition")
         self.root.geometry("1024x768")  # Menambahkan ukuran frame 200x200
 
         # Tombol untuk memilih gambar
@@ -36,6 +36,14 @@ class ColorClassifierApp:
         # Area untuk menampilkan gambar
         self.image_label = tk.Label(root)
         self.image_label.place(x=20, y=70)
+        self.image_text_label = tk.Label(root, text="Citra Asli", font=("Arial", 10))  
+        self.image_text_label.place(x=90, y=285)
+
+        # Area untuk menampilkan gambar grayscale
+        self.image_grayscale_label = tk.Label(root)
+        self.image_grayscale_label.place(x=20, y=310)
+        self.grayscale_label = tk.Label(root, text="Hasil Grayscale", font=("Arial", 10))  
+        self.grayscale_label.place(x=75, y=530)
 
         # Area untuk menampilkan gambar segmentasi
         self.segmentation_image_label = tk.Label(root)
@@ -84,6 +92,7 @@ class ColorClassifierApp:
             # Membaca gambar
             self.source_image = cv2.imread(file_path)
             self.display_image(self.source_image)
+            
 
     # segmentasi
     def otsu_segmentation(self, image):
@@ -176,15 +185,26 @@ class ColorClassifierApp:
 
 
     def display_image(self, image):
-        # Konversi gambar OpenCV ke format yang dapat ditampilkan oleh Tkinter
-        image = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(image)
-        image = ImageTk.PhotoImage(image)
+        # Konversi gambar OpenCV ke format yang dapat ditampilkan oleh Tkinter (Original)
+        image_original = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
+        image_original = cv2.cvtColor(image_original, cv2.COLOR_BGR2RGB)
+        image_original = Image.fromarray(image_original)
+        image_original = ImageTk.PhotoImage(image_original)
+
+        # Konversi gambar OpenCV ke grayscale dan format yang dapat ditampilkan oleh Tkinter
+        image_grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_grayscale = cv2.resize(image_grayscale, (200, 200), interpolation=cv2.INTER_AREA)
+        image_grayscale = Image.fromarray(image_grayscale)
+        image_grayscale = ImageTk.PhotoImage(image_grayscale)
 
         # Menampilkan gambar di GUI
-        self.image_label.config(image=image)
-        self.image_label.image = image
+        self.image_label.config(image=image_original)
+        self.image_label.image = image_original
+
+        # Menampilkan gambar grayscale di GUI
+        self.image_grayscale_label.config(image=image_grayscale)
+        self.image_grayscale_label.image = image_grayscale
+
 
     def show_segment(self):
         if self.source_image is not None:
